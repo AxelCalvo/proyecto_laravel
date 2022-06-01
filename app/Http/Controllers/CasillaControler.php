@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Casilla;
-
+use Barryvdh\DomPDF\Facade as PDF; 
 class CasillaControler extends Controller
 {
     /**
@@ -105,4 +105,20 @@ class CasillaControler extends Controller
        Casilla::whereId($id)->delete();
        return redirect('casilla');
     }
+    public function generatepdf()    {
+        $casillas = Casilla::all();               
+         $pdf = PDF::loadView('casilla/list', ['casillas'=>$casillas]);               
+         return $pdf->download('archivo.pdf');
+        /* $html =  "<div style='text-align:center;'>
+         <h1>PDF generado desde etiquetas html</h1> 
+         <br>
+         <h3>&copy;.dev</h3> 
+         </div>";     
+            
+         $pdf = PDF::loadHTML($html);        
+         return $pdf->download('archivo.pdf');    */
+         /*$casillas = Casilla::all();    
+         return PDF::loadView('casilla/list', ['casillas'=>$casillas]→stream('archivo.pdf');*/
+        
+        }
 }

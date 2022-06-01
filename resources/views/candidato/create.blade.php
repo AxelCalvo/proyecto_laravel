@@ -5,6 +5,10 @@
         margin-top: 40px;
     }
 </style>
+
+
+
+
 <div class="card uper">
     <div class="card-header">
         Agregar Candidato
@@ -20,7 +24,8 @@
         </div><br />
         @endif
         <form method="post" action="{{ route('candidato.store') }} " 
-        enctype="multipart/form-data">
+        enctype="multipart/form-data"
+        onsubmit="return validateData();">
             {{ csrf_field() }}
             <div class="form-group">
                 <label for="nombrecompleto">Nombre completo:</label>
@@ -38,16 +43,26 @@
             <div class="form-group">
                 <label for="foto">Foto:</label>
                 <input type="file" id="foto" accept="image/png, image/jpeg" 
-                 class="form-control" name="foto" />
+                 class="form-control" name="foto" 
+                 onchange="previewImage(event,'imageCandidato');"
+                 />
+
+                 <img src="" id="imageCandidato" width="200px" heigth="200px">
             </div>
             <div class="form-group">
                 <label for="perfil">Perfil:</label>
                 <input type="file" id="perfil" accept="application/pdf"
-                 class="form-control" name="perfil" />
+                 class="form-control" name="perfil"
+                 onchange="previewPDF(event,'previewPDF');" />
             </div>
-
+             <iframe id="previewPDF" style="display:none;" title="preview"></iframe>
             <button type="submit" class="btn btn-primary">Guardar</button>
         </form>
     </div>
 </div>
+
+<script
+src="{{  asset('js/custom.js') }}">
+
+</script>
 @endsection

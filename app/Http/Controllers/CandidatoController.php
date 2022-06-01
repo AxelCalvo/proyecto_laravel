@@ -1,114 +1,153 @@
 <?php
-namespace App\Http\Controllers\Api;
-use App\Http\Controllers\Api\GenericController as GenericController; 
+
+namespace App\Http\Controllers;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator; 
 use App\Models\Candidato;
 
-class CandidatoController extends GenericController
+
+class CandidatoController extends Controller
 {
-/**
-*Display a listing of the resource.
-*
-*@return \Illuminate\Http\Response
-*/
-public function index()
-{
-$candidatos = Candidato::all();
-$resp = $this->sendResponse($candidatos, "Listado de candidatos"); 
-return ($resp);
-}
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+    $candidatos=Candidato::all();
+    /*$resp=$this->sendResponse($candidatos,"Listado de Candidatos");
+    return ($resp);*/
+    return view ("candidato/list",compact("candidatos"));
+    }
 
-/**
-*Show the form for creating a new resource.
-*
-*@return \Illuminate\Http\Response
-*/
-public function create()
-{
-    return view('candidato/create');
-}
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    function validateData(Request $request)
+    {
+        $request->validate([
+            'nombrecompleto' => 'required|max:200',
+            'sexo' => 'required',
+        ]);
+    }
+    public function create()
+    {
+        return view('candidato/create');
+    }
 
-/**
-*Store a newly created resource in storage.
-*@param \Illuminate\Http\Request $request
-*@return \Illuminate\Http\Response
-*/
-public function store(Request $request)
-{
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        $this->validateData($request);
 
-$validacion = Validator::make($request->all(), [ 'nombrecompleto' => 'unique:candidato|required|max:200', 'sexo' =>'required'
-]);
+        $fotocandidato = "";
+        $perfilcandidato = "";
+        if ($request->hasFile('foto')) {
+            $foto = $request->file('foto');
+            $fotocandidato = $foto->getClientOriginalName();
+        }
+        if ($request->hasFile('perfil')) {
+            $perfil = $request->file('perfil');
+            $perfilcandidato = $perfil->getClientOriginalName();
+        }
+        $campos
+            = array(
+                'nombrecompleto' => $request->nombrecompleto,
+                'sexo'           => $request->sexo,
+                'foto'           => $fotocandidato,
+                'perfil'         => $perfilcandidato,
+            );
+        if ($request->hasFile('foto')) $foto->move(public_path('image'), $fotocandidato);
+        if ($request->hasFile('perfil')) $perfil->move(public_path('pdf'), $perfilcandidato);
+        $candidato = Candidato::create($campos);
+        echo $candidato->nombrecompleto . " se guardo correctamente ... ";
+        
 
+       
 
-if ($validacion->fails())
-return $this->sendError("Error de validacion", $validacion->errors());
-$fotocandidato=""; $perfilcandidato=""; if ($request->hasFile('foto')){
-$foto	= $request->file('foto');
-$fotocandidato= $foto->getClientOriginalName();
-}
-if ($request->hasFile('perfil')){
-$perfil	= $request->file('perfil');
-$perfilcandidato = $perfil->getClientOriginalName();
-}
+    }
 
-$campos	= array(
-'nombrecompleto' => $request->nombrecompleto, 'sexo'	=> $request->sexo,
-'foto'	=> $fotocandidato, 'perfil'	=> $perfilcandidato,
-);
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        //
+    }
 
-if ($request->hasFile('foto')) $foto->move(public_path('img'), $fotocandidato);
-if ($request->hasFile('perfil')) $perfil->move(public_path('img'), $perfilcandidato);
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
 
+        $candidato=Candidato::find($id);
+        return view ('candidato/edit',compact('candidato'));
+        
+    
+    }
 
-$candidato = Candidato::create($campos);
-$resp = $this->sendResponse($candidato, "Guardado...");
-return($resp);
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        $this->validateData($request);
 
+        $fotoCandidato = "";
+        $perfilCandidato = "";
+        if ($request->hasFile('foto')) {
+            $foto = $request->file('foto');
+            $fotoCandidato = $foto->getClientOriginalName();
+        }
+        if ($request->hasFile('perfil')) {
+            $perfil = $request->file('perfil');
+            $perfilCandidato = $perfil->getClientOriginalName();
+        }
 
-} //--- End store
+        $currentValue = Candidato::find($id);
+        if (empty($fotoCandidato)) $fotoCandidato = $currentValue->foto;
+        if (empty($perfilCandidato)) $perfilCandidato = $currentValue->perfil;
 
-/**
-*Display the specified resource.
-*
-*@param int  $id
-*@return \Illuminate\Http\Response
-*/
-public function show($id)
-{
-//
-}
+        $campos=[
+                'nombrecompleto' => $request->nombrecompleto,
+                'sexo'           => $request->sexo,
+                'foto'           => $fotoCandidato,
+                'perfil'         => $perfilCandidato,
+        ];
+        if ($request->hasFile('foto')) $foto->move(public_path('image'), $fotoCandidato);
+        if ($request->hasFile('perfil')) $perfil->move(public_path('pdf'), $perfilCandidato);
 
-/**
-*Show the form for editing the specified resource.
-*
-*@param int  $id
-*@return \Illuminate\Http\Response
-*/
-public function edit($id)
-{
-//
-}
+        Candidato::whereId($id)->update($campos);
+        return redirect('candidato')->with('success', 'Actualizado correctamente...');
+    }
 
-/**
-*Update the specified resource in storage.
-*
-*@param \Illuminate\Http\Request $request
-*@param int  $id
-*@return \Illuminate\Http\Response
-*/
-public function update(Request $request, $id)
-{
-//
-}
-/**
-*Remove the specified resource from storage.
-*
-*@param int  $id
-*@return \Illuminate\Http\Response
-*/
-public function destroy($id)
-{
-//
-}
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        Candidato::whereId($id)->delete();
+        return redirect('candidato');
+    }
 }
